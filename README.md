@@ -49,4 +49,10 @@ orientation properly for iOS 17.
 
 ## Screenshots
 
-(Add app screenshots here)
+Preview / Filtering / Recording
+<p float="left">
+  <img src="https://raw.githubusercontent.com/taka-sakamoto/SwiftUI-Metal-Camera-Filter/main/screenshot1.png" width="250"/>
+  <img src="https://raw.githubusercontent.com/taka-sakamoto/SwiftUI-Metal-Camera-Filter/main/screenshot2.png" width="250"/>
+  <img src="https://raw.githubusercontent.com/taka-sakamoto/SwiftUI-Metal-Camera-Filter/main/screenshot3.png" width="250"/>
+</p>
+
