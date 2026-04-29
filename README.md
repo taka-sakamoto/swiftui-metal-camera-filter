@@ -1,4 +1,4 @@
-### SwiftUI Metal Camera Filter
+# SwiftUI Metal Camera Filter
 
 A real-time camera filter app built with SwiftUI, AVFoundation, and Metal.
 This app allows users to preview live camera input with real-time Metal-based filters, 
