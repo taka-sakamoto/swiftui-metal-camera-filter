@@ -15,6 +15,7 @@ adjust filter intensity, and save filtered photos and videos directly to the Pho
 - iOS 17 compatible camera rotation handling
 
 ## Tech Stack
+
 - SwiftUI
 - Metal / MetalKit
 - AVFoundation
