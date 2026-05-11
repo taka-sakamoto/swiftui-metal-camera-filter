@@ -50,7 +50,7 @@ orientation properly for iOS 17.
 
 ## Demo
 
-
+<video src="https://github.com/user-attachments/assets/1e732e02-78dd-472b-b769-3310f0eeef57" width="250" autoplay muted loop></video>
 
 ## Screenshots
 
