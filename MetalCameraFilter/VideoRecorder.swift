@@ -92,13 +92,13 @@ final class VideoRecorder {
                 isRecording = true
                 startTime = nil
                 
-                print("Recording started")
             }
         } catch {
             print("failed to start recording: \(error)")
         }
         
         frameCount = 0
+        
     }
     
     func stopRecording(completion: @escaping () -> Void) {

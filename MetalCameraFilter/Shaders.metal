@@ -18,7 +18,14 @@ struct FilterUniforms {
     float intensity;
 };
 
-vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
+struct VertexUniforms {
+    float aspectScale;
+};
+
+vertex VertexOut vertexShader(
+    uint vertexID [[vertex_id]],
+    constant VertexUniforms& uniforms [[buffer(0)]]
+    ) {
     float4 positions[4] = {
         float4(-1.0, -1.0, 0.0, 1.0),
         float4( 1.0, -1.0, 0.0, 1.0),
@@ -27,14 +34,20 @@ vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
     };
     
     float2 texCoords[4] = {
+        
         float2(0.0, 1.0),
         float2(1.0, 1.0),
         float2(0.0, 0.0),
         float2(1.0, 0.0)
+         
     };
     
     VertexOut out;
     out.position = positions[vertexID];
+    
+    out.position.x *= uniforms.aspectScale;
+    //out.position.y /= uniforms.aspectScale;
+    
     out.texCoord = texCoords[vertexID];
     
     return out;

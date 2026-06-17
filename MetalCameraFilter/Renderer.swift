@@ -16,6 +16,10 @@ struct FilterUniforms {
     var intensity: Float
 }
 
+struct VertexUniforms {
+    var aspectScale: Float
+}
+
 final class Renderer: NSObject, MTKViewDelegate {
     
     var filterType: FilterType = .normal
@@ -147,6 +151,7 @@ final class Renderer: NSObject, MTKViewDelegate {
     }
     
     func draw(in view: MTKView) {
+
         guard let texture = currentTexture,
               let drawable = view.currentDrawable,
               let renderPassDescriptor = view.currentRenderPassDescriptor,
@@ -157,8 +162,22 @@ final class Renderer: NSObject, MTKViewDelegate {
         else {
             return
         }
+
                 
         commandEncoder.setRenderPipelineState(pipelineState)
+        
+        let textureAspect = Float(texture.width) / Float(texture.height)
+        let viewAspect = Float(view.drawableSize.width) / Float(view.drawableSize.height)
+        
+        var vertexUniforms = VertexUniforms(
+            aspectScale: textureAspect / viewAspect
+        )
+        
+        commandEncoder.setVertexBytes(
+            &vertexUniforms,
+            length: MemoryLayout<VertexUniforms>.stride,
+            index: 0
+        )
 
         commandEncoder.setFragmentTexture(
             texture,
@@ -169,7 +188,9 @@ final class Renderer: NSObject, MTKViewDelegate {
             filterType: Int32(filterType.rawValueIndex),
             intensity: intensity
         )
-
+        
+ 
+        
         commandEncoder.setFragmentBytes(
             &uniforms,
             length: MemoryLayout<FilterUniforms>.stride,
@@ -188,7 +209,8 @@ final class Renderer: NSObject, MTKViewDelegate {
             let time = CACurrentMediaTime()
 
             appendVideoFrame(
-                texture: drawable.texture,
+                texture: texture,
+                // texture: drawable.texture,
                 time: time
             )
         }
@@ -214,7 +236,6 @@ final class Renderer: NSObject, MTKViewDelegate {
             nil
         )
 
-        print("Saved filtered photo")
     }
     
     func createPixelBuffer(from texture: MTLTexture) -> CVPixelBuffer? {
