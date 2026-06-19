@@ -185,13 +185,15 @@ final class Renderer: NSObject, MTKViewDelegate {
             return
         }
         
-        guard let commandEncoder =
+        /*
+        guard let previewEncoder =
             commandBuffer.makeRenderCommandEncoder(
                 descriptor: renderPassDescriptor
             )
         else {
             return
         }
+         */
         
         if filteredTexture == nil ||
             filteredTexture?.width != texture.width ||
@@ -224,54 +226,57 @@ final class Renderer: NSObject, MTKViewDelegate {
             0,
             1
         )
-                
-        commandEncoder.setRenderPipelineState(pipelineState)
         
-        let textureAspect = Float(texture.width) / Float(texture.height)
-        let viewAspect = Float(view.drawableSize.width) / Float(view.drawableSize.height)
+        guard let offscreenEncoder =
+            commandBuffer.makeRenderCommandEncoder(
+                descriptor: offscreenPass
+            )
+        else {
+            return
+        }
         
         var vertexUniforms = VertexUniforms(
-            aspectScale: textureAspect / viewAspect
+            aspectScale: 1.0
         )
         
-        commandEncoder.setVertexBytes(
+        offscreenEncoder.setRenderPipelineState(pipelineState)
+        
+         offscreenEncoder.setVertexBytes(
             &vertexUniforms,
             length: MemoryLayout<VertexUniforms>.stride,
             index: 0
         )
 
-        commandEncoder.setFragmentTexture(
+         offscreenEncoder.setFragmentTexture(
             texture,
             index: 0
         )
-
+        
         var uniforms = FilterUniforms(
             filterType: Int32(filterType.rawValueIndex),
             intensity: intensity
         )
         
- 
-        
-        commandEncoder.setFragmentBytes(
+         offscreenEncoder.setFragmentBytes(
             &uniforms,
             length: MemoryLayout<FilterUniforms>.stride,
             index: 0
         )
 
-        commandEncoder.drawPrimitives(
+         offscreenEncoder.drawPrimitives(
             type: .triangleStrip,
             vertexStart: 0,
             vertexCount: 4
         )
 
-        commandEncoder.endEncoding()
+         offscreenEncoder.endEncoding()
+         
 
         if videoRecorder.recording {
             let time = CACurrentMediaTime()
 
             appendVideoFrame(
-                texture: texture,
-                // texture: drawable.texture,
+                texture: filteredTexture,
                 time: time
             )
         }
