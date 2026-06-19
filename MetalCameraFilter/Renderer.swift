@@ -16,9 +16,11 @@ struct FilterUniforms {
     var intensity: Float
 }
 
+
 struct VertexUniforms {
     var aspectScale: Float
 }
+
 
 final class Renderer: NSObject, MTKViewDelegate {
     
@@ -28,13 +30,15 @@ final class Renderer: NSObject, MTKViewDelegate {
     let videoRecorder = VideoRecorder()
     
     private let device: MTLDevice
-    private let commndQueue: MTLCommandQueue
+    private let commandQueue: MTLCommandQueue
     private var pipelineState: MTLRenderPipelineState!
     private var textureCache: CVMetalTextureCache?
     
     var currentTexture: MTLTexture?
     
     private weak var mtkView: MTKView?
+    
+    var filteredTexture: MTLTexture?
     
     init(mtkView: MTKView) {
         guard let device = mtkView.device,
@@ -43,14 +47,15 @@ final class Renderer: NSObject, MTKViewDelegate {
             print("Faild to setup Metal")
             
             self.device = MTLCreateSystemDefaultDevice()!
-            self.commndQueue = self.device.makeCommandQueue()!
+            self.commandQueue = self.device.makeCommandQueue()!
             
             super.init()
             return
         }
         
         self.device = device
-        self.commndQueue = commandQueue
+        self.commandQueue = commandQueue
+        self.mtkView = mtkView
         
         super.init()
         
@@ -147,6 +152,26 @@ final class Renderer: NSObject, MTKViewDelegate {
         self.currentTexture = texture
     }
     
+    func makeFilteredTexture(width: Int, height: Int) {
+        
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .bgra8Unorm,
+            width: width,
+            height: height,
+            mipmapped: false
+        )
+        
+        descriptor.usage = [
+            .shaderRead,
+            .renderTarget
+        ]
+        
+        filteredTexture = device.makeTexture(
+            descriptor: descriptor
+        )
+    }
+    
+    
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
     }
     
@@ -155,14 +180,50 @@ final class Renderer: NSObject, MTKViewDelegate {
         guard let texture = currentTexture,
               let drawable = view.currentDrawable,
               let renderPassDescriptor = view.currentRenderPassDescriptor,
-              let commandBuffer = commndQueue.makeCommandBuffer(),
-              let commandEncoder = commandBuffer.makeRenderCommandEncoder(
-                descriptor: renderPassDescriptor
-              )
+              let commandBuffer = commandQueue.makeCommandBuffer()
         else {
             return
         }
-
+        
+        guard let commandEncoder =
+            commandBuffer.makeRenderCommandEncoder(
+                descriptor: renderPassDescriptor
+            )
+        else {
+            return
+        }
+        
+        if filteredTexture == nil ||
+            filteredTexture?.width != texture.width ||
+            filteredTexture?.height != texture.height {
+            
+            makeFilteredTexture(
+                width: texture.width,
+                height: texture.height
+            )
+            
+            print(                      // ログ用
+                "filteredTexture:",
+                filteredTexture?.width ?? 0,
+                filteredTexture?.height ?? 0
+            )
+        }
+        
+        guard let filteredTexture else {
+            return
+        }
+        
+        let offscreenPass = MTLRenderPassDescriptor()
+        
+        offscreenPass.colorAttachments[0].texture = filteredTexture
+        offscreenPass.colorAttachments[0].loadAction = .clear
+        offscreenPass.colorAttachments[0].storeAction = .store
+        offscreenPass.colorAttachments[0].clearColor = MTLClearColorMake(
+            0,
+            0,
+            0,
+            1
+        )
                 
         commandEncoder.setRenderPipelineState(pipelineState)
         

@@ -46,7 +46,6 @@ vertex VertexOut vertexShader(
     out.position = positions[vertexID];
     
     out.position.x *= uniforms.aspectScale;
-    //out.position.y /= uniforms.aspectScale;
     
     out.texCoord = texCoords[vertexID];
     
