@@ -202,16 +202,6 @@ final class Renderer: NSObject, MTKViewDelegate {
             return
         }
         
-        /*
-        guard let previewEncoder =
-            commandBuffer.makeRenderCommandEncoder(
-                descriptor: renderPassDescriptor
-            )
-        else {
-            return
-        }
-         */
-        
         if filteredTexture == nil ||
             filteredTexture?.width != texture.width ||
             filteredTexture?.height != texture.height {
@@ -345,14 +335,51 @@ final class Renderer: NSObject, MTKViewDelegate {
         commandBuffer.commit()
     }
     
+    func currentFilteredImage() -> UIImage? {
+        
+        guard let texture = filteredTexture else {
+            return nil
+        }
+        
+        guard let ciImage = CIImage(
+            mtlTexture: texture,
+            options: nil
+        ) else {
+            return nil
+        }
+        
+        let correctedImage = ciImage.oriented(.down)
+        
+        let context = CIContext(
+            options: [
+                .workingColorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+                .outputColorSpace: CGColorSpace(name: CGColorSpace.sRGB)!
+            ]
+        )
+        
+        guard let cgImage = context.createCGImage(
+            correctedImage,
+            from: correctedImage.extent
+        ) else {
+            return nil
+        }
+        
+        // return UIImage(cgImage: cgImage)
+        
+        
+        return UIImage(
+            cgImage: cgImage,
+            scale: 1.0,
+            orientation: .up
+        )
+        
+    }
+    
     func saveCurrentFrame(from mtkView: MTKView) {
-        let renderer = UIGraphicsImageRenderer(size: mtkView.bounds.size)
 
-        let image = renderer.image { _ in
-            mtkView.drawHierarchy(
-                in: mtkView.bounds,
-                afterScreenUpdates: true
-            )
+        guard let image = currentFilteredImage() else {
+            print("filtered image nil")
+            return
         }
 
         UIImageWriteToSavedPhotosAlbum(
@@ -361,8 +388,8 @@ final class Renderer: NSObject, MTKViewDelegate {
             nil,
             nil
         )
-
     }
+    
     
     func createPixelBuffer(from texture: MTLTexture) -> CVPixelBuffer? {
         let width = texture.width
