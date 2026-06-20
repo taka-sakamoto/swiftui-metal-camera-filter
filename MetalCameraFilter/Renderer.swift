@@ -40,6 +40,8 @@ final class Renderer: NSObject, MTKViewDelegate {
     
     var filteredTexture: MTLTexture?
     
+    private var copyPipelineState: MTLRenderPipelineState!
+    
     init(mtkView: MTKView) {
         guard let device = mtkView.device,
               let commandQueue = device.makeCommandQueue()
@@ -94,21 +96,36 @@ final class Renderer: NSObject, MTKViewDelegate {
     private func buildPipeline() {
         guard let library = device.makeDefaultLibrary(),
               let vertexFunction = library.makeFunction(name: "vertexShader"),
-              let fragmentFunction = library.makeFunction(name: "fragmentShader")
+              let fragmentFunction = library.makeFunction(name: "fragmentShader"),
+              let copyFragmentFunction = library.makeFunction(
+                name: "fragmentCopyShader"
+              )
         else {
             print("Failed to load shaders")
             return
         }
         
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
+        
         pipelineDescriptor.vertexFunction = vertexFunction
         pipelineDescriptor.fragmentFunction = fragmentFunction
         pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        
+        let copyPipelineDescriptor = MTLRenderPipelineDescriptor()
+        
+        copyPipelineDescriptor.vertexFunction = vertexFunction
+        copyPipelineDescriptor.fragmentFunction = copyFragmentFunction
+        copyPipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
         
         do {
             pipelineState = try device.makeRenderPipelineState(
                 descriptor: pipelineDescriptor
             )
+            
+            copyPipelineState = try device.makeRenderPipelineState(
+                descriptor: copyPipelineDescriptor
+            )
+            
         } catch {
             print("Failed to create pipeline state: \(error)")
             return
@@ -280,6 +297,49 @@ final class Renderer: NSObject, MTKViewDelegate {
                 time: time
             )
         }
+        
+        guard let previewEncorder =
+                commandBuffer.makeRenderCommandEncoder(
+                    descriptor: renderPassDescriptor
+                )
+        else {
+            return
+        }
+        
+        let textureAspect =
+            Float(filteredTexture.width) /
+            Float(filteredTexture.height)
+        
+        let viewAspect =
+            Float(view.drawableSize.width) /
+            Float(view.drawableSize.height)
+        
+        var previewUniforms = VertexUniforms(
+            aspectScale: textureAspect / viewAspect
+        )
+        
+        previewEncorder.setRenderPipelineState(
+            copyPipelineState
+        )
+        
+        previewEncorder.setVertexBytes(
+            &previewUniforms,
+            length: MemoryLayout<VertexUniforms>.stride,
+            index: 0
+        )
+        
+        previewEncorder.setFragmentTexture(
+            filteredTexture,
+            index: 0
+        )
+        
+        previewEncorder.drawPrimitives(
+            type: .triangleStrip,
+            vertexStart: 0,
+            vertexCount: 4
+        )
+        
+        previewEncorder.endEncoding()
 
         commandBuffer.present(drawable)
         commandBuffer.commit()

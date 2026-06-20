@@ -99,3 +99,18 @@ fragment float4 fragmentShader(
     
     return color;
 }
+
+fragment float4 fragmentCopyShader(
+    VertexOut in [[stage_in]],
+    texture2d<float> sourceTexture [[texture(0)]]
+) {
+    constexpr sampler textureSampler(
+        mag_filter::linear,
+        min_filter::linear
+    );
+    
+    return sourceTexture.sample(
+        textureSampler,
+        in.texCoord
+    );
+}
