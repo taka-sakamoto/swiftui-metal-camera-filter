@@ -19,7 +19,6 @@ final class CameraManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        print("CameraManager init")
     }
     
     func setupCamera() {
@@ -67,13 +66,11 @@ final class CameraManager: NSObject, ObservableObject {
             queue: DispatchQueue(label: "camera.frame.queue")
         )
         
-        print("Delegate set")
-        
         // Output
         if session.outputs.isEmpty,
            session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
-            print("Output added")
+            
         } else {
             print("Cannot add output")
         }
@@ -86,12 +83,10 @@ final class CameraManager: NSObject, ObservableObject {
         }
 
         session.commitConfiguration()
-        print("Configuration committed")
         
         if !session.isRunning {
             DispatchQueue.global(qos: .userInitiated).async {
                 self.session.startRunning()
-                print("Session started")
             }
         }
     }
@@ -106,7 +101,7 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     ) {
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get pixel buffer")
+        
             return
         }
         

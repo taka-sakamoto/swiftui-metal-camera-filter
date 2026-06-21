@@ -111,7 +111,6 @@ final class VideoRecorder {
             guard let self = self else { return }
             
             DispatchQueue.main.async {
-                print("Writer status: \(self.assetWriter?.status.rawValue ?? -1)")
                 
                 if let error = self.assetWriter?.error {
                     print("Writer error: \(error.localizedDescription)")
@@ -119,8 +118,6 @@ final class VideoRecorder {
         
                 let path = self.outputURL.path
             
-                print("Video path: \(path)")
-                print("File exists: \(FileManager.default.fileExists(atPath: path))")
             
                 if UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(path) {
                     UISaveVideoAtPathToSavedPhotosAlbum(
@@ -138,6 +135,7 @@ final class VideoRecorder {
                 completion()
             }
         }
+        
     }
     
     func appendFrame(
@@ -151,6 +149,7 @@ final class VideoRecorder {
         else {
             return
         }
+        
  
         let presentationTime = CMTime(
             value: frameCount,
@@ -163,5 +162,6 @@ final class VideoRecorder {
             pixelBuffer,
             withPresentationTime: presentationTime
         )
+
     }
 }

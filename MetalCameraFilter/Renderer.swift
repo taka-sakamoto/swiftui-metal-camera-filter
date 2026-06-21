@@ -77,14 +77,16 @@ final class Renderer: NSObject, MTKViewDelegate {
         time: CFTimeInterval
     ) {
         guard let pixelBuffer = createPixelBuffer(from: texture) else {
-            print("Failed to create pixelBuffer")
+            
             return
         }
-
+        
+        
         let cmTime = CMTime(
             seconds: time,
             preferredTimescale: 600
         )
+        
 
         videoRecorder.appendFrame(
             pixelBuffer: pixelBuffer,
@@ -259,8 +261,6 @@ final class Renderer: NSObject, MTKViewDelegate {
             index: 0
         )
         
-        // print("intensity:", intensity) // ログ用
-        
         var uniforms = FilterUniforms(
             filterType: Int32(filterType.rawValueIndex),
             intensity: intensity
@@ -288,6 +288,7 @@ final class Renderer: NSObject, MTKViewDelegate {
                 texture: filteredTexture,
                 time: time
             )
+            
         }
         
         guard let previewEncorder =
