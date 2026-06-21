@@ -74,7 +74,7 @@ struct ContentView: View {
                 }
                 
                 VStack(alignment: .leading) {
-                    Text("Intensiy: \(String(format: "%.2f", intensity))")
+                    Text("Intensity: \(String(format: "%.2f", intensity))")
                         .font(.headline)
                     
                     Slider(

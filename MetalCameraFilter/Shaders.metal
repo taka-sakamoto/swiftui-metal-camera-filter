@@ -72,7 +72,7 @@ fragment float4 fragmentShader(
     // Sepia
     if (uniforms.filterType == 1) {
         float3 sepiaColor;
-        sepiaColor.r = dot(color.rbg, float3(0.393, 0.769, 0.189));
+        sepiaColor.r = dot(color.rgb, float3(0.393, 0.769, 0.189));
         sepiaColor.g = dot(color.rgb, float3(0.349, 0.686, 0.168));
         sepiaColor.b = dot(color.rgb, float3(0.272, 0.534, 0.131));
         

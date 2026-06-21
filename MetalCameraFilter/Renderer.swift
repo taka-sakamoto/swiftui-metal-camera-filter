@@ -348,7 +348,7 @@ final class Renderer: NSObject, MTKViewDelegate {
             return nil
         }
         
-        let correctedImage = ciImage.oriented(.down)
+        let correctedImage = ciImage.oriented(.downMirrored)
         
         let context = CIContext(
             options: [
