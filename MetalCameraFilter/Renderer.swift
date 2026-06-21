@@ -25,7 +25,7 @@ struct VertexUniforms {
 final class Renderer: NSObject, MTKViewDelegate {
     
     var filterType: FilterType = .normal
-    var intensity: Float = 1.0
+    var intensity: Float = 0.5
     
     let videoRecorder = VideoRecorder()
     
@@ -258,6 +258,8 @@ final class Renderer: NSObject, MTKViewDelegate {
             texture,
             index: 0
         )
+        
+        // print("intensity:", intensity) // ログ用
         
         var uniforms = FilterUniforms(
             filterType: Int32(filterType.rawValueIndex),

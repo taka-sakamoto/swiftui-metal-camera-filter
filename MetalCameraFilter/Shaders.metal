@@ -93,7 +93,7 @@ fragment float4 fragmentShader(
     if (uniforms.filterType == 3) {
         float3 invertColor = 1.0 - color.rgb;
         
-        color.rgb = mix(color.rgb, invertColor, uniforms.intensity);
+        color.rgb = invertColor;
         return color;
     }
     
